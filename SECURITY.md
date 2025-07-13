@@ -1,11 +1,11 @@
-# Security Policy
+# security policy
 
-## Supported Versions
+## supported versions
 
-| Version | Supported          |
+| version | supported          |
 | ------- | ------------------ |
 | 0.0.3   | :white_check_mark: |
 
-## Reporting a Vulnerability
+## reporting a vulnerability
 
-If you find a security issue, please email [linto.cet@gmail.com] with details.
+if you find a security issue, please email linto.cet@gmail.com with details.
