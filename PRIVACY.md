@@ -6,7 +6,7 @@ this document explains how we handle information for the `quickchart` open-sourc
 
 ### information we collect
 
-we do **not** collect any personally identifiable information (pii) from you. the software runs locally and does not send data to our servers.
+we do **not** collect any personally identifiable information (pii) from you. the software runs locally and does not send data to our servers, except as described below.
 
 ### github interactions
 
@@ -14,7 +14,9 @@ when you interact with this project on github (e.g., creating issues or pull req
 
 ### third-party services
 
-`quickchart` does not use any third-party services that collect user data.
+to render charts, this app uses the public `quickchart.io` api. we send aggregated, non-personal chart configuration data (such as chart labels and values) to their service, which returns a chart image. no personally identifiable information is sent.
+
+for more details, please review the [quickchart.io privacy policy](https://quickchart.io/privacy-policy/).
 
 ### changes to this policy
 
