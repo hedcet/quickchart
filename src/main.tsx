@@ -110,6 +110,6 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
   );
 };
 
-Devvit.addCustomPostType({ height: "tall", name: "quickchart", render: App });
+Devvit.addCustomPostType({ name: "quickchart", render: App });
 
 export default Devvit;
