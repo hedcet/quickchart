@@ -12,7 +12,7 @@ we do **not** collect any personally identifiable information (pii).
 
 this app uses the `quickchart.io` api to generate chart images. to do this, it sends non-personal, aggregated chart data (like labels and values) to their service. no pii is shared.
 
-for more details, see the [quickchart.io privacy policy](https://quickchart.io/privacy/).
+for more details, see the https://quickchart.io/privacy.
 
 ### github interactions
 
