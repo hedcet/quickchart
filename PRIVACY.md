@@ -2,26 +2,22 @@
 
 **last updated:** 2025-07-13
 
-this document explains how we handle information for the `quickchart` open-source project, available at https://github.com/hedcet/quickchart.
+this policy covers the `quickchart` devvit app, an open-source project available at https://github.com/hedcet/quickchart.
 
-### information we collect
+### data we collect
 
-we do **not** collect any personally identifiable information (pii) from you. the software runs locally and does not send data to our servers, except as described below.
-
-### github interactions
-
-when you interact with this project on github (e.g., creating issues or pull requests), that activity is public and governed by github's own privacy policy.
+we do **not** collect any personally identifiable information (pii).
 
 ### third-party services
 
-to render charts, this app uses the public `quickchart.io` api. we send aggregated, non-personal chart configuration data (such as chart labels and values) to their service, which returns a chart image. no personally identifiable information is sent.
+this app uses the `quickchart.io` api to generate chart images. to do this, it sends non-personal, aggregated chart data (like labels and values) to their service. no pii is shared.
 
-for more details, please review the [quickchart.io privacy policy](https://quickchart.io/privacy-policy/).
+for more details, see the [quickchart.io privacy policy](https://quickchart.io/privacy/).
 
-### changes to this policy
+### github interactions
 
-we may update this policy. any changes will be reflected in the "last updated" date.
+your interactions on github (e.g., creating issues or pull requests) are public and governed by github's privacy policy.
 
-### contact us
+### contact
 
-for questions, please open an issue on our github repository or email linto.cet@gmail.com.
+for questions, please open an issue or email linto.cet@gmail.com.
