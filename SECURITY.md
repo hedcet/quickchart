@@ -8,4 +8,4 @@
 
 ## reporting a vulnerability
 
-if you find a security issue, please email linto.cet@gmail.com with details.
+please email linto.cet@gmail.com with details.
