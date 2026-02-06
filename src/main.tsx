@@ -3,9 +3,8 @@ import md5 from "blueimp-md5";
 import { isJSON } from "validator";
 
 import { validate } from "./ajv.ts";
-import { Actions } from "./config.ts";
+import { defaultChart } from "./config.ts";
 import { IConfigs } from "./interface.ts";
-import { has } from "lodash";
 
 Devvit.configure({
   http: { domains: ["quickchart.io"] },
@@ -13,14 +12,6 @@ Devvit.configure({
   redditAPI: true,
   redis: true,
 });
-
-const defaultChart = {
-  data: {
-    datasets: [{ label: "Value", data: [256, 512] }],
-    labels: ["Q1", "Q10"],
-  },
-  type: "line",
-};
 
 const postForm = Devvit.createForm(
   {
@@ -129,6 +120,7 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
             configs.charts.map(async (chart) => {
               const hash = md5(JSON.stringify(chart));
               // refs[hash] = fetch()
+              // curl -L "https://quickchart.io/chart?w=400&h=512&bkg=white&v=4&c=%7B%0A%20%20data%3A%20%7B%0A%20%20%20%20datasets%3A%20%5B%0A%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20backgroundColor%3A%20%27%23FFCCBC%27%2C%0A%20%20%20%20%20%20%20%20borderColor%3A%20%27%23BF360C%27%2C%0A%20%20%20%20%20%20%20%20borderWidth%3A%201%2C%0A%20%20%20%20%20%20%20%20data%3A%20%5B256%2C%20512%5D%2C%0A%20%20%20%20%20%20%20%20fill%3A%20true%2C%0A%20%20%20%20%20%20%20%20label%3A%20%27Value%27%2C%0A%0A%20%20%20%20%20%20%20%20tension%3A%200.25%2C%0A%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%5D%2C%0A%20%20%20%20labels%3A%20%5B%27Q1%27%2C%20%27Q10%27%5D%2C%0A%20%20%7D%2C%0A%20%20options%3A%20%7B%0A%20%20%20%20layout%3A%20%7B%0A%20%20%20%20%20%20padding%3A%20%7B%0A%20%20%20%20%20%20%20%20bottom%3A%2024%2C%0A%20%20%20%20%20%20%20%20left%3A%2024%2C%0A%20%20%20%20%20%20%20%20right%3A%2048%2C%0A%20%20%20%20%20%20%20%20top%3A%2048%2C%0A%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%7D%2C%0A%20%20%20%20plugins%3A%20%7B%0A%20%20%20%20%20%20legend%3A%20%7B%0A%20%20%20%20%20%20%20%20labels%3A%20%7B%0A%20%20%20%20%20%20%20%20%20%20usePointStyle%3A%20true%2C%0A%20%20%20%20%20%20%20%20%20%20pointStyle%3A%20%27circle%27%2C%0A%20%20%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%7D%2C%0A%20%20%20%20scales%3A%20%7B%0A%20%20%20%20%20%20y%3A%20%7B%0A%20%20%20%20%20%20%20%20beginAtZero%3A%20false%2C%0A%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%7D%2C%0A%20%20%7D%2C%0A%20%20type%3A%20%27line%27%2C%0A%7D" -o assets/placeholder.png
             }),
           );
           await ctx.redis.set(`${ctx.postId}|configs`, JSON.stringify(configs));

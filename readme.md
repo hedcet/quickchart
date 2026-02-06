@@ -2,7 +2,7 @@
 
 this will help you to post/config one/multiple highlight/normal chart-js template with movie rating feature like letterboxd
 
-[demo](https://www.reddit.com/r/kerala_boxoffice/comments/1j6zuyz) | [source-code](https://github.com/hedcet/quickchart)
+[demo](https://www.reddit.com/r/chart_js_dev/comments/1qwmket) | [source-code](https://github.com/hedcet/quickchart)
 
 this will use [quickchart.io](https://quickchart.io) service to convert user given chart-js config to image & keep under `config.refs`
 
@@ -63,5 +63,5 @@ you can modify it like this
 
 ### changelog
 
-- 0.0.26
+- 0.1.2
   - first preview
