@@ -72,21 +72,15 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
   const width = getWidthMin(ctx.dimensions?.width || 288);
 
   async function getChartUrl(key: string, width: number): Promise<string> {
-    // if (!_widths.includes(width)) throw new Error("invalid width");
     const k = `${key}|${width}`;
     const r = await ctx.redis.get(k);
     if (r) return r;
-    for (const w of _widths) {
-      const k = `${key}|${w}`;
-      const r = await ctx.redis.get(k);
-      if (r) continue;
-      const { mediaUrl } = await ctx.media.upload({
-        type: "image",
-        url: `${_api}?w=${w}&v=4&h=512&c=${encodeURIComponent(chart)}`, // version=4
-      });
-      await ctx.redis.set(k, mediaUrl);
-    }
-    return (await ctx.redis.get(k))!;
+    const { mediaUrl } = await ctx.media.upload({
+      type: "image",
+      url: `${_api}?w=${width}&v=4&h=512&c=${encodeURIComponent(chart)}`, // version=4
+    });
+    await ctx.redis.set(k, mediaUrl);
+    return mediaUrl;
   }
 
   const [chartUrl, setChartUrl] = useState(
@@ -98,7 +92,7 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
       subredditName: ctx.subredditName!,
     });
     return (
-      !!(r.children || []).find((mod: any) => mod.id === ctx.userId) ||
+      !!(r.children || []).some((mod: any) => mod.id === ctx.userId) ||
       ctx.userId === "t2_tnr2e" // u/HedCET
     );
   }
@@ -128,7 +122,7 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
     async (r) => {
       setChart(r.configs);
       await ctx.redis.set(ctx.postId!, r.configs);
-      await ctx.redis.set(`${ctx.postId}|${width}`, "");
+      for (const w of _widths) await ctx.redis.set(`${ctx.postId}|${w}`, "");
       setChartUrl(await getChartUrl(ctx.postId!, width));
       // showToast("customized");
     },
