@@ -73,8 +73,9 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
 
   async function getChartUrl(key: string, width: number): Promise<string> {
     const k = `${key}|${width}`;
-    const r = await ctx.redis.get(k);
-    if (r) return r;
+    const cache = await ctx.redis.get(k);
+    if (cache) return cache;
+    const chart = await getChart(key);
     const { mediaUrl } = await ctx.media.upload({
       type: "image",
       url: `${_api}?w=${width}&v=4&h=512&c=${encodeURIComponent(chart)}`, // version=4
@@ -120,9 +121,9 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
       title: "customize",
     },
     async (r) => {
-      setChart(r.configs);
       await ctx.redis.set(ctx.postId!, r.configs);
       for (const w of _widths) await ctx.redis.set(`${ctx.postId}|${w}`, "");
+      setChart(r.configs);
       setChartUrl(await getChartUrl(ctx.postId!, width));
       // showToast("customized");
     },
