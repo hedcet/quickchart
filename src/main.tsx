@@ -130,7 +130,7 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
       await ctx.redis.set(ctx.postId!, r.configs);
       await ctx.redis.set(`${ctx.postId}|${width}`, "");
       setChartUrl(await getChartUrl(ctx.postId!, width));
-      showToast("customized");
+      // showToast("customized");
     },
   );
 
