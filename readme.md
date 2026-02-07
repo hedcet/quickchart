@@ -1,6 +1,10 @@
 ### chart-js app for reddit
 
-[source-code](https://github.com/hedcet/quickchart) | this will help you to post/config one/multiple highlight/normal chart-js template
+this will help you to post/config one/multiple highlight/normal chart-js template
+
+![highlights](https://github.com/hedcet/quickchart/blob/main/assets/highlights.jpg?raw=true)
+
+[demo](https://www.reddit.com/r/chart_js_dev/comments/1qy9w1w) | [source-code](https://github.com/hedcet/quickchart)
 
 you can customize it like this
 
