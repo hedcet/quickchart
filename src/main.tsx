@@ -1,17 +1,24 @@
-import { Devvit, useAsync, useForm, useState } from "@devvit/public-api";
-import md5 from "blueimp-md5";
-import { isJSON } from "validator";
-
-import { validate } from "./ajv.ts";
-import { defaultChart } from "./config.ts";
-import { IConfigs } from "./interface.ts";
+import { Devvit, useForm, useState } from "@devvit/public-api";
+import { js as beautify } from "js-beautify";
 
 Devvit.configure({
-  http: { domains: ["quickchart.io"] },
+  // http: { domains: ["quickchart.io"] },
   media: true,
   redditAPI: true,
   redis: true,
 });
+
+const _api = "https://quickchart.io/chart";
+const _chart =
+  '{ data: { datasets: [ { backgroundColor: pattern.draw("plus", "#FFCCBC"), borderColor: "#BF360C", borderWidth: 1, data: [256, 512], fill: true, label: "Value", pointStyle: "circle", tension: 0.25 } ], labels: ["Q1", "Q10"] }, options: { layout: { padding: { bottom: 24, left: 16, right: 32, top: 48 } }, plugins: { legend: { labels: { usePointStyle: true } } }, scales: { y: { beginAtZero: false } } }, type: "line" }';
+const _widths = [718, 512, 400, 343, 288];
+
+function format(s: string) {
+  return beautify(s, {
+    indent_size: 2,
+    space_in_empty_paren: true,
+  });
+}
 
 const postForm = Devvit.createForm(
   {
@@ -38,14 +45,7 @@ const postForm = Devvit.createForm(
       subredditName: ctx.subredditName!,
       title: e.values.title,
     });
-    await ctx.redis.set(
-      `${post.id}|configs`,
-      JSON.stringify({
-        mods: [ctx.userId],
-        charts: [defaultChart],
-        refs: { [md5(JSON.stringify(defaultChart))]: "placeholder.png" },
-      } as IConfigs),
-    );
+    await ctx.redis.set(post.id, _chart);
     ctx.ui.navigateTo(post);
   },
 );
@@ -58,39 +58,52 @@ Devvit.addMenuItem({
 });
 
 const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
-  async function getConfigs() {
-    const configs = await ctx.redis.get(`${ctx.postId}|configs`);
-    return configs && isJSON(configs) ? JSON.parse(configs) : {};
+  async function getChart(key: string): Promise<string> {
+    return (await ctx.redis.get(key))!;
   }
 
-  const [configs, setConfigs] = useState(async () => await getConfigs());
+  const [chart, setChart] = useState(async () => await getChart(ctx.postId!));
 
   function getWidthMin(width: number) {
-    const widths = [718, 512, 400, 343, 288];
-    return widths.find((w) => w <= width) || widths[widths.length - 1];
+    return _widths.find((w) => w <= width) || _widths[_widths.length - 1];
   }
 
   const height = ctx.dimensions?.height || 512; // regular=320, tall=512
   const width = getWidthMin(ctx.dimensions?.width || 288);
 
-  function getCharts(charts: any[], refs: any = {}) {
-    return charts.map((chart) => {
-      const hash = md5(JSON.stringify(chart));
-      return refs[`${hash}|${width}`] || refs[hash] || "error.png";
-    });
+  async function getChartUrl(key: string, width: number): Promise<string> {
+    // if (!_widths.includes(width)) throw new Error("invalid width");
+    const k = `${key}|${width}`;
+    const r = await ctx.redis.get(k);
+    if (r) return r;
+    for (const w of _widths) {
+      const k = `${key}|${w}`;
+      const r = await ctx.redis.get(k);
+      if (r) continue;
+      const { mediaUrl } = await ctx.media.upload({
+        type: "image",
+        url: `${_api}?w=${w}&v=4&h=512&c=${encodeURIComponent(chart)}`, // version=4
+      });
+      await ctx.redis.set(k, mediaUrl);
+    }
+    return (await ctx.redis.get(k))!;
   }
 
-  const [chartIndex, setChartIndex] = useState(0);
-  const [charts, setCharts] = useState(
-    getCharts(
-      configs?.charts?.length ? configs.charts : [defaultChart],
-      configs?.refs,
-    ),
+  const [chartUrl, setChartUrl] = useState(
+    async () => await getChartUrl(ctx.postId!, width),
   );
 
-  function isMod() {
-    return configs?.mods?.includes(ctx.userId) || ctx.userId === "t2_tnr2e"; // u/HedCET
+  async function getModFlag(): Promise<boolean> {
+    const r = await ctx.reddit.getModerators({
+      subredditName: ctx.subredditName!,
+    });
+    return (
+      !!(r.children || []).find((mod: any) => mod.id === ctx.userId) ||
+      ctx.userId === "t2_tnr2e" // u/HedCET
+    );
   }
+
+  const [modFlag, setModFlag] = useState(async () => await getModFlag());
 
   function showToast(text: string) {
     ctx.ui.showToast(text);
@@ -102,7 +115,7 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
       cancelLabel: "cancel",
       fields: [
         {
-          defaultValue: JSON.stringify(configs, null, 2),
+          defaultValue: format(chart),
           label: "configs",
           lineHeight: 20,
           name: "configs",
@@ -113,23 +126,11 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
       title: "customize",
     },
     async (r) => {
-      if (r.configs && isJSON(r.configs)) {
-        const configs: IConfigs = JSON.parse(r.configs);
-        if (validate(configs)) {
-          await Promise.all(
-            configs.charts.map(async (chart) => {
-              const hash = md5(JSON.stringify(chart));
-              // refs[hash] = fetch()
-              // curl -L "https://quickchart.io/chart?w=400&h=512&bkg=white&v=4&c=%7B%0A%20%20data%3A%20%7B%0A%20%20%20%20datasets%3A%20%5B%0A%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20backgroundColor%3A%20%27%23FFCCBC%27%2C%0A%20%20%20%20%20%20%20%20borderColor%3A%20%27%23BF360C%27%2C%0A%20%20%20%20%20%20%20%20borderWidth%3A%201%2C%0A%20%20%20%20%20%20%20%20data%3A%20%5B256%2C%20512%5D%2C%0A%20%20%20%20%20%20%20%20fill%3A%20true%2C%0A%20%20%20%20%20%20%20%20label%3A%20%27Value%27%2C%0A%0A%20%20%20%20%20%20%20%20tension%3A%200.25%2C%0A%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%5D%2C%0A%20%20%20%20labels%3A%20%5B%27Q1%27%2C%20%27Q10%27%5D%2C%0A%20%20%7D%2C%0A%20%20options%3A%20%7B%0A%20%20%20%20layout%3A%20%7B%0A%20%20%20%20%20%20padding%3A%20%7B%0A%20%20%20%20%20%20%20%20bottom%3A%2024%2C%0A%20%20%20%20%20%20%20%20left%3A%2024%2C%0A%20%20%20%20%20%20%20%20right%3A%2048%2C%0A%20%20%20%20%20%20%20%20top%3A%2048%2C%0A%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%7D%2C%0A%20%20%20%20plugins%3A%20%7B%0A%20%20%20%20%20%20legend%3A%20%7B%0A%20%20%20%20%20%20%20%20labels%3A%20%7B%0A%20%20%20%20%20%20%20%20%20%20usePointStyle%3A%20true%2C%0A%20%20%20%20%20%20%20%20%20%20pointStyle%3A%20%27circle%27%2C%0A%20%20%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%7D%2C%0A%20%20%20%20scales%3A%20%7B%0A%20%20%20%20%20%20y%3A%20%7B%0A%20%20%20%20%20%20%20%20beginAtZero%3A%20false%2C%0A%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%7D%2C%0A%20%20%7D%2C%0A%20%20type%3A%20%27line%27%2C%0A%7D" -o assets/placeholder.png
-            }),
-          );
-          await ctx.redis.set(`${ctx.postId}|configs`, JSON.stringify(configs));
-          setConfigs(configs);
-        } else {
-          const [error] = validate.errors!;
-          showToast(error.message || "invalid configs");
-        }
-      } else showToast("invalid json");
+      setChart(r.configs);
+      await ctx.redis.set(ctx.postId!, r.configs);
+      await ctx.redis.set(`${ctx.postId}|${width}`, "");
+      setChartUrl(await getChartUrl(ctx.postId!, width));
+      showToast("customized");
     },
   );
 
@@ -141,7 +142,7 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
           imageHeight={height}
           imageWidth={width}
           resizeMode="scale-down"
-          url={charts[chartIndex]}
+          url={chartUrl}
           width="100%"
         />
       </vstack>
@@ -152,25 +153,11 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
           padding="medium"
           width="100%"
         >
-          {0 < chartIndex && (
-            <button
-              icon="left-outline"
-              onPress={() => setChartIndex(chartIndex - 1)}
-              size="small"
-            />
-          )}
-          {isMod() && (
+          <spacer grow />
+          {modFlag && (
             <button
               icon="customize-outline"
               onPress={() => ctx.ui.showForm(customizeForm)}
-              size="small"
-            />
-          )}
-          <spacer grow />
-          {1 < charts.length && chartIndex < charts.length - 1 && (
-            <button
-              icon="right-outline"
-              onPress={() => setChartIndex(chartIndex + 1)}
               size="small"
             />
           )}
