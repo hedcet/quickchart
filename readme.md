@@ -11,7 +11,7 @@ this app lets you post and configure one or more chart-js templates (highlight o
 - post chart-js templates and render images via quickchart
 - responsive image generation for multiple widths
 - moderator-only customize form on the post
-- auto-refresh from `wiki/post/comment:<slug>` every 15 minutes
+- auto-refresh from `wiki:<slug>` every 15 minutes (wiki sources only)
 - redis-backed caching to avoid redundant generation
 
 ### how it works
@@ -20,7 +20,7 @@ this app lets you post and configure one or more chart-js templates (highlight o
 - when the app renders, it generates image urls per width and caches them as `${postId}|img_url_<width>`
 - the customize form accepts either:
   - a direct chart-js config json (string)
-  - a source reference like `wiki:<slug>`, `post:<id>`, `comment:<id>`
+  - a source reference like `wiki:<slug>` (wiki sources only)
 - if you choose a wiki source, the app records the mapping in `scheduler_config` so the scheduler can refresh it periodically
 
 ### usage
@@ -69,11 +69,11 @@ this app lets you post and configure one or more chart-js templates (highlight o
 - cadence: every 15 minutes (`*/15 * * * *`)
 - job name: `chart-js`
 - where mappings live: redis key `scheduler_config`
-- format: pipe-separated entries `post_id:type:ref`
+- format: pipe-separated entries `post_id:type:ref` (type=`wiki` only)
   - example: `abc123:wiki:config-js|def456:wiki:another-page`
 - on each run:
   - reads `scheduler_config`
-  - fetches the source content for each entry
+  - fetches wiki content for each entry (type=`wiki`)
   - writes the latest config to `${postId}|chart_config`
   - clears `${postId}|img_url_<width>` so the next view regenerates fresh images
 
@@ -87,7 +87,7 @@ to manually bust image caches, set `${postId}|img_url_<width>` to an empty strin
 
 ### error handling
 
-- if quickchart upload fails, the app logs the error and falls back to a placeholder image sized to the requested width
+- if quickchart upload fails, the app logs the error and returns a generic error image reference; ensure your chart config is valid
 
 ### tips
 
