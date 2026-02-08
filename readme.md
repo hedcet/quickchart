@@ -1,6 +1,6 @@
 ### chart-js app for reddit
 
-this will help you to post/config one/multiple highlight/normal chart-js template
+this will help you to post/config one/multiple highlight/normal chart-js template & auto-refresh
 
 [demo](https://www.reddit.com/r/kerala_boxoffice/comments/1qytznm) | [source-code](https://github.com/hedcet/quickchart)
 
@@ -51,7 +51,7 @@ you can customize it like this
 
 ![highlights](https://github.com/hedcet/quickchart/blob/main/assets/highlights.jpg?raw=true)
 
-to read/refresh chart config from wiki/post/comment every `*/15 * * * *`, save config as `wiki/post/comment:<slug>`, [this](https://www.reddit.com/r/kerala_boxoffice/wiki/chart-js) as `wiki:config-js` will help to automate
+to auto-refresh the chart config every `*/15 * * * *`, save the source as `wiki/post/comment:<slug>`. example: use the wiki page [chart-js](https://www.reddit.com/r/kerala_boxoffice/wiki/chart-js) as `wiki:config-js`.
 
 ### changelog
 
