@@ -138,9 +138,9 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
       fields: [
         {
           defaultValue: format(chartConfig),
-          label: "configs",
+          label: "config",
           lineHeight: 20,
-          name: "configs",
+          name: "config",
           required: true,
           type: "paragraph",
         },
@@ -148,22 +148,24 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
       title: "customize",
     },
     async (r) => {
-      const [type, ref] = r.configs.split(":").map((i) => i.trim());
+      const [type, ref] = r.config.split(":").map((i) => i.trim());
       await setSchedulerConfig(type, ref);
+      let config = r.config;
       if (type === "wiki" && ref) {
         const { content } = await ctx.reddit.getWikiPage(
           ctx.subredditName!,
           ref,
         );
-        await ctx.redis.set(`${ctx.postId}|chart_config`, content);
+        config = content;
         showToast("scheduled");
       } else {
-        await ctx.redis.set(`${ctx.postId}|chart_config`, r.configs);
         showToast("customized");
       }
+      if (config === chartConfig) return;
+      await ctx.redis.set(`${ctx.postId}|chart_config`, config);
       for (const w of _widths)
         await ctx.redis.set(`${ctx.postId}|img_url_${w}`, "");
-      setChartConfig(r.configs);
+      setChartConfig(config);
       setChartImgUrl(await getChartImgUrl(ctx.postId!, width));
     },
   );
@@ -222,7 +224,9 @@ Devvit.addSchedulerJob({
           ctx.subredditName!,
           job.ref,
         );
-        await ctx.redis.set(`${job.id}|chart_config`, content);
+        const k = `${job.id}|chart_config`;
+        if (content === (await ctx.redis.get(k))) continue;
+        await ctx.redis.set(k, content);
         for (const w of _widths)
           await ctx.redis.set(`${job.id}|img_url_${w}`, "");
       } catch (e) {

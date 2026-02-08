@@ -1,6 +1,6 @@
 ### chart-js app for reddit
 
-post and customize chart-js templates on reddit, rendered via [quickchart.io](https://quickchart.io). moderator-only customize form; auto-refresh from `wiki:<slug>` every 15 minutes; cached per width for speed.
+post and customize chart-js templates on reddit, rendered via [quickchart.io](https://quickchart.io). moderators can customize; auto-refresh from `wiki:<slug>` every 15 minutes; fast cached images.
 
 [demo](https://www.reddit.com/r/kerala_boxoffice/comments/1qytznm) · [source-code](https://github.com/hedcet/quickchart)
 
@@ -8,9 +8,9 @@ post and customize chart-js templates on reddit, rendered via [quickchart.io](ht
 
 ### quick start
 
-- create a post via “post chart-js template” (mods)
+- create a post via “post chart-js template” (moderators)
 - click customize on the post
-- paste either chart-js config json or `wiki:<slug>` (e.g., `wiki:config-js`)
+- paste chart settings or `wiki:<slug>` (e.g., `wiki:config-js`)
 
 ### auto-refresh
 
@@ -31,7 +31,7 @@ post and customize chart-js templates on reddit, rendered via [quickchart.io](ht
 
 ### changelog
 
-- 0.14.0 — add scheduler (every 15 minutes)
+- 0.15.0 — add scheduler (every 15 minutes)
 - 0.1.0 — first preview
 
 ### license
