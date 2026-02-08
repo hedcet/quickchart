@@ -87,6 +87,7 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
     } catch (e: any) {
       console.error(k, chart, e.message || e);
     }
+    console.log(k, { [hash]: url });
     await ctx.redis.hSet(k, { [hash]: url });
     return url;
   }
@@ -107,21 +108,23 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
 
   const [modFlag, setModFlag] = useState(async () => await getModFlag());
 
-  async function setSchedulerConfig(type: string, ref: string) {
-    const config = ((await ctx.redis.get("scheduler_config")) || "")
+  async function setSchedulerConfig(id: string, type: string, ref: string) {
+    const job = `${id}:${type}:${ref}`;
+    const k = "scheduler_config";
+    const v = ((await ctx.redis.get(k)) || "")
       .split("|")
       .map((i) => {
-        const [id, type, ref] = i.split(":").map((j) => j.trim());
-        return { id, type, ref };
+        const [_id, _type, _ref] = i.split(":").map((j) => j.trim());
+        return { _id, _type, _ref };
       })
-      .filter(({ id, type, ref }) => id && id !== ctx.postId && type && ref)
+      .filter(({ _id, _type, _ref }) => _id && _id !== id && _type && _ref)
       .reduce(
-        (m, i) => `${m ? `${m}|` : ""}${i.id}:${i.type}:${i.ref}`,
-        ["wiki"].includes(type) ? `${ctx.postId!}:${type}:${ref}` : "",
+        (m, i) => `${m ? `${m}|` : ""}${i._id}:${i._type}:${i._ref}`,
+        ["wiki"].includes(type) ? job : "",
       );
-    console.log("scheduler_config", config);
-    await ctx.redis.set("scheduler_config", config);
-    return config;
+    console.log(job, k, v);
+    await ctx.redis.set(k, v);
+    return v;
   }
 
   function showToast(text: string) {
@@ -146,7 +149,7 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
     },
     async (r) => {
       const [type, ref] = r.config.split(":").map((i) => i.trim());
-      await setSchedulerConfig(type, ref);
+      await setSchedulerConfig(ctx.postId!, type, ref);
       let config = r.config;
       if (type === "wiki" && ref) {
         const { content } = await ctx.reddit.getWikiPage(
@@ -170,7 +173,6 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
     <zstack backgroundColor="white" height="100%" width="100%">
       <vstack alignment="middle center" grow height="100%" width="100%">
         <image
-          grow
           imageHeight={height}
           imageWidth={width}
           resizeMode="fit"
@@ -235,7 +237,7 @@ Devvit.addTrigger({
     console.log("AppInstall");
     await ctx.scheduler.runJob({
       name: "chart-js",
-      cron: "*/15 * * * *",
+      cron: "1 * * * *",
     });
   },
 });
@@ -249,7 +251,7 @@ Devvit.addTrigger({
       if (!jobs.some((i) => i.name === "chart-js"))
         await ctx.scheduler.runJob({
           name: "chart-js",
-          cron: "*/15 * * * *",
+          cron: "1 * * * *",
         });
     } catch (e) {
       console.error("Failed to check scheduler:", e);
