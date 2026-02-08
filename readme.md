@@ -2,12 +2,6 @@
 
 Create interactive Chart.js visualizations on Reddit using [quickchart.io](https://quickchart.io) for rendering.
 
-**Features:**
-- Moderator customization
-- Auto-sync from wiki pages
-- Smart Redis caching
-- Responsive mobile rendering
-
 [demo](https://www.reddit.com/r/kerala_boxoffice/comments/1qytznm) · [source](https://github.com/hedcet/quickchart)
 
 ---
