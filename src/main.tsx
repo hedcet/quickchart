@@ -11,7 +11,6 @@ Devvit.configure({
 const _api = "https://quickchart.io/chart";
 const _chart =
   '{ data: { datasets: [ { backgroundColor: pattern.draw("plus", "#FFCCBC"), borderColor: "#BF360C", borderWidth: 1, data: [256, 512], fill: true, label: "Value", pointStyle: "circle", tension: 0.25 } ], labels: ["Q1", "Q10"] }, options: { layout: { padding: { bottom: 24, left: 16, right: 32, top: 48 } }, plugins: { legend: { labels: { usePointStyle: true } } }, scales: { y: { beginAtZero: false } } }, type: "line" }';
-const _widths = [718, 512, 400, 343, 288];
 
 function format(s: string) {
   return beautify(s, {
@@ -66,34 +65,34 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
     async () => await getChartConfig(ctx.postId!),
   );
 
-  function getWidthMin(width: number) {
-    return _widths.find((w) => w <= width) || _widths[_widths.length - 1];
-  }
+  const height = Math.round(ctx.dimensions?.height || 512); // regular=320, tall=512
+  const width = Math.round(ctx.dimensions?.width || 288);
 
-  const height = ctx.dimensions?.height || 512; // regular=320, tall=512
-  const width = getWidthMin(ctx.dimensions?.width || 288);
-
-  async function getChartImgUrl(key: string, width: number): Promise<string> {
-    const k = `${key}|img_url_${width}`;
-    const cache = await ctx.redis.get(k);
+  async function getChartImageUrl(
+    postId: string,
+    options: { width: number; height: number },
+  ): Promise<string> {
+    const k = `${postId}|images`;
+    const hash = `w${options.width}|h${options.height}`;
+    const cache = await ctx.redis.hGet(k, hash);
     if (cache) return cache;
-    const chart = await getChartConfig(ctx.postId!);
+    const chart = await getChartConfig(postId);
     let url = "error.png";
     try {
       const { mediaUrl } = await ctx.media.upload({
         type: "image",
-        url: `${_api}?w=${width}&v=4&h=512&c=${encodeURIComponent(chart)}`, // version=4
+        url: `${_api}?w=${options.width}&v=4&h=${options.height}&c=${encodeURIComponent(chart)}`, // version=4
       });
       url = mediaUrl;
-    } catch (e) {
+    } catch (e: any) {
       console.error(k, chart, e.message || e);
     }
-    await ctx.redis.set(k, url);
+    await ctx.redis.hSet(k, { [hash]: url });
     return url;
   }
 
   const [chartImgUrl, setChartImgUrl] = useState(
-    async () => await getChartImgUrl(ctx.postId!, width),
+    async () => await getChartImageUrl(ctx.postId!, { width, height }),
   );
 
   async function getModFlag(): Promise<boolean> {
@@ -117,10 +116,8 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
       })
       .filter(({ id, type, ref }) => id && id !== ctx.postId && type && ref)
       .reduce(
-        (m, i) => `${m}|${i.id}:${i.type}:${i.ref}`,
-        ["wiki", "post", "comment"].includes(type)
-          ? `${ctx.postId!}:${type}:${ref}`
-          : "",
+        (m, i) => `${m ? `${m}|` : ""}${i.id}:${i.type}:${i.ref}`,
+        ["wiki"].includes(type) ? `${ctx.postId!}:${type}:${ref}` : "",
       );
     console.log("scheduler_config", config);
     await ctx.redis.set("scheduler_config", config);
@@ -163,10 +160,9 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
       }
       if (config === chartConfig) return;
       await ctx.redis.set(`${ctx.postId}|chart_config`, config);
-      for (const w of _widths)
-        await ctx.redis.set(`${ctx.postId}|img_url_${w}`, "");
+      await ctx.redis.del(`${ctx.postId}|images`);
       setChartConfig(config);
-      setChartImgUrl(await getChartImgUrl(ctx.postId!, width));
+      setChartImgUrl(await getChartImageUrl(ctx.postId!, { width, height }));
     },
   );
 
@@ -174,12 +170,11 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
     <zstack backgroundColor="white" height="100%" width="100%">
       <vstack alignment="middle center" grow height="100%" width="100%">
         <image
-          height="100%"
+          grow
           imageHeight={height}
           imageWidth={width}
-          resizeMode="scale-down"
+          resizeMode="fit"
           url={chartImgUrl}
-          width="100%"
         />
       </vstack>
       <vstack width="100%">
@@ -227,8 +222,7 @@ Devvit.addSchedulerJob({
         const k = `${job.id}|chart_config`;
         if (content === (await ctx.redis.get(k))) continue;
         await ctx.redis.set(k, content);
-        for (const w of _widths)
-          await ctx.redis.set(`${job.id}|img_url_${w}`, "");
+        await ctx.redis.del(`${job.id}|images`);
       } catch (e) {
         console.error(e);
       }
@@ -250,10 +244,16 @@ Devvit.addTrigger({
   event: "AppUpgrade",
   onEvent: async (_event, ctx) => {
     console.log("AppUpgrade");
-    await ctx.scheduler.runJob({
-      name: "chart-js",
-      cron: "*/15 * * * *",
-    });
+    try {
+      const jobs = await ctx.scheduler.listJobs();
+      if (!jobs.some((i) => i.name === "chart-js"))
+        await ctx.scheduler.runJob({
+          name: "chart-js",
+          cron: "*/15 * * * *",
+        });
+    } catch (e) {
+      console.error("Failed to check scheduler:", e);
+    }
   },
 });
 

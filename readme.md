@@ -1,41 +1,44 @@
-### chart-js app for reddit
+### Chart.js app for Reddit
 
-post and customize chart-js templates on reddit, rendered via [quickchart.io](https://quickchart.io). moderators can customize; auto-refresh from `wiki:<slug>` every 15 minutes; fast cached images.
+Create interactive Chart.js visualizations on Reddit, powered by [quickchart.io](https://quickchart.io).
 
-tldr: post a chart, link a wiki, auto-refresh every 15 minutes.
+**Features:** moderator customization · auto-sync from wiki · smart caching · responsive mobile rendering
 
-[demo](https://www.reddit.com/r/kerala_boxoffice/comments/1qytznm) · [source-code](https://github.com/hedcet/quickchart)
+[demo](https://www.reddit.com/r/kerala_boxoffice/comments/1qytznm) · [source](https://github.com/hedcet/quickchart)
 
 ---
 
-### quick start
+### Quick start
 
-- create a post via “post chart-js template” (moderators)
-- click customize on the post
-- paste chart settings or `wiki:<slug>` (e.g., `wiki:config-js`)
+1. Create a post (moderators: use "post chart-js template" menu)
+2. Click customize on your post
+3. Paste Chart.js config or link to wiki: `wiki:my-chart`
 
-### auto-refresh
+### Auto-sync
 
-- checks every 15 minutes and updates the chart when your linked wiki page changes
-- you can also open customize and re-save to refresh immediately
+Link charts to wiki pages for automatic updates:
+- Config changes sync every 15 minutes
+- Manual refresh: re-save via customize
 
-### refreshing
+### How it works
 
-- if the image looks outdated, wait up to 15 minutes or re-save via customize
+**Dynamic rendering** — adapts to any screen size (mobile-optimized)  
+**Smart caching** — Redis hashes for efficient storage  
+**Auto-invalidation** — clears cache when config updates
 
-### notes
+### Notes
 
-- only moderators see the customize button
-- use plain markdown in wiki (no code fences)
-- if rendering fails, an error image appears; fix your settings and re-save
+- Only moderators see the customize button
+- Wiki pages should contain plain Chart.js config (no code blocks)
+- Errors show a placeholder—verify config and re-save
 
 ![highlights](https://github.com/hedcet/quickchart/blob/main/assets/highlights.jpg?raw=true)
 
-### changelog
+### Changelog
 
-- 0.15.0 — add scheduler (every 15 minutes)
-- 0.1.0 — first preview
+- 0.15.0 — scheduler (15-minute sync)
+- 0.1.0 — initial release
 
-### license
+### License
 
-see the license file for terms.
+See LICENSE file.
