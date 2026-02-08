@@ -55,7 +55,7 @@ to read/refresh chart config from wiki/post/comment every `*/15 * * * *`, save c
 
 ### changelog
 
-- 0.7.0
-  - add scheduler for automation with wiki/post/comment
+- 0.9.0
+  - add scheduler to refresh chart config from wiki/post/comment
 - 0.1.0
   - first preview
