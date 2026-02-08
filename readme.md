@@ -2,6 +2,8 @@
 
 post and customize chart-js templates on reddit, rendered via [quickchart.io](https://quickchart.io). moderators can customize; auto-refresh from `wiki:<slug>` every 15 minutes; fast cached images.
 
+tldr: post a chart, link a wiki, auto-refresh every 15 minutes.
+
 [demo](https://www.reddit.com/r/kerala_boxoffice/comments/1qytznm) · [source-code](https://github.com/hedcet/quickchart)
 
 ---
@@ -24,8 +26,8 @@ post and customize chart-js templates on reddit, rendered via [quickchart.io](ht
 ### notes
 
 - only moderators see the customize button
-- keep wiki content in plain markdown or inside code fences
-- if rendering fails, an error image appears (e.g., `error.png`); fix your config and re-save
+- use plain markdown in wiki (no code fences)
+- if rendering fails, an error image appears; fix your settings and re-save
 
 ![highlights](https://github.com/hedcet/quickchart/blob/main/assets/highlights.jpg?raw=true)
 
