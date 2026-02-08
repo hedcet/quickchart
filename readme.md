@@ -12,28 +12,26 @@ post and customize chart-js templates on reddit, rendered via [quickchart.io](ht
 - click customize on the post
 - paste either chart-js config json or `wiki:<slug>` (e.g., `wiki:config-js`)
 
-### scheduler
+### auto-refresh
 
-- runs every 15 minutes (`*/15 * * * *`); reads `scheduler_config` (`post_id:wiki:<slug>`); updates `${postId}|chart_config`; clears `${postId}|img_url_<width>`
+- checks every 15 minutes and updates the chart when your linked wiki page changes
+- you can also open customize and re-save to refresh immediately
 
-### cache keys
+### refreshing
 
-- `${postId}|chart_config` — chart config string
-- `${postId}|img_url_<width>` — image url per width
-- `scheduler_config` — `post_id:wiki:<slug>` entries joined by `|`
-
-to bust image cache: set `${postId}|img_url_<width>` to empty; it regenerates on view.
+- if the image looks outdated, wait up to 15 minutes or re-save via customize
 
 ### notes
 
-- customize button is visible to moderators
-- prefer markdown/code fences in wiki; invalid configs show an error image
+- only moderators see the customize button
+- keep wiki content in plain markdown or inside code fences
+- if rendering fails, an error image appears (e.g., `error.png`); fix your config and re-save
 
 ![highlights](https://github.com/hedcet/quickchart/blob/main/assets/highlights.jpg?raw=true)
 
 ### changelog
 
-- 0.9.0 — add scheduler (every 15 minutes)
+- 0.14.0 — add scheduler (every 15 minutes)
 - 0.1.0 — first preview
 
 ### license

@@ -108,6 +108,25 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
 
   const [modFlag, setModFlag] = useState(async () => await getModFlag());
 
+  async function setSchedulerConfig(type: string, ref: string) {
+    const config = ((await ctx.redis.get("scheduler_config")) || "")
+      .split("|")
+      .map((i) => {
+        const [id, type, ref] = i.split(":").map((j) => j.trim());
+        return { id, type, ref };
+      })
+      .filter(({ id, type, ref }) => id && id !== ctx.postId && type && ref)
+      .reduce(
+        (m, i) => `${m}|${i.id}:${i.type}:${i.ref}`,
+        ["wiki", "post", "comment"].includes(type)
+          ? `${ctx.postId!}:${type}:${ref}`
+          : "",
+      );
+    console.log("scheduler_config", config);
+    await ctx.redis.set("scheduler_config", config);
+    return config;
+  }
+
   function showToast(text: string) {
     ctx.ui.showToast(text);
   }
@@ -130,28 +149,12 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
     },
     async (r) => {
       const [type, ref] = r.configs.split(":").map((i) => i.trim());
+      await setSchedulerConfig(type, ref);
       if (type === "wiki" && ref) {
         const { content } = await ctx.reddit.getWikiPage(
           ctx.subredditName!,
           ref,
         );
-        if (!content) return;
-        const config = ((await ctx.redis.get("scheduler_config")) || "")
-          .split("|")
-          .map((i) => {
-            const [id, type, ref] = i.split(":").map((j) => j.trim());
-            return { id, type, ref };
-          })
-          .filter(
-            ({ id, type, ref }) =>
-              id && id !== ctx.postId && type === "wiki" && ref,
-          )
-          .reduce(
-            (m, i) => `${m}|${i.id}:${i.type}:${i.ref}`,
-            `${ctx.postId!}:wiki:${ref}`,
-          );
-        console.log("scheduler_config", config);
-        await ctx.redis.set("scheduler_config", config);
         await ctx.redis.set(`${ctx.postId}|chart_config`, content);
         showToast("scheduled");
       } else {
@@ -212,14 +215,13 @@ Devvit.addSchedulerJob({
         const [id, type, ref] = i.split(":").map((j) => j.trim());
         return { id, type, ref };
       })
-      .filter((i) => i.id && i.type === "wiki" && i.ref))
+      .filter((i) => i.id && i.type === "wiki" && i.ref)) // post/comment
       try {
         console.log(job);
         const { content } = await ctx.reddit.getWikiPage(
           ctx.subredditName!,
           job.ref,
         );
-        if (!content) continue;
         await ctx.redis.set(`${job.id}|chart_config`, content);
         for (const w of _widths)
           await ctx.redis.set(`${job.id}|img_url_${w}`, "");
