@@ -51,7 +51,8 @@ you can customize it like this
 
 ![highlights](https://github.com/hedcet/quickchart/blob/main/assets/highlights.jpg?raw=true)
 
-to auto-refresh the chart config every `*/15 * * * *`, save the source as `wiki/post/comment:<slug>`. example: use the wiki page [chart-js](https://www.reddit.com/r/kerala_boxoffice/wiki/chart-js) as `wiki:config-js`.
+to auto-refresh the chart config every `*/15 * * * *`, save the source as `wiki/post/comment:<slug>`
+example: use the wiki page [chart-js](https://www.reddit.com/r/kerala_boxoffice/wiki/chart-js) as `wiki:config-js`.
 
 ### changelog
 
