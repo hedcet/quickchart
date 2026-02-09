@@ -1,4 +1,4 @@
-import { Devvit, useForm, useState } from "@devvit/public-api";
+import { Devvit, useAsync, useForm, useState } from "@devvit/public-api";
 import { js as beautify } from "js-beautify";
 
 Devvit.configure({
@@ -38,7 +38,7 @@ const postForm = Devvit.createForm(
     const post = await ctx.reddit.submitPost({
       preview: (
         <vstack alignment="middle center" grow>
-          <text size="large">loading...</text>
+          <text>loading...</text>
         </vstack>
       ),
       subredditName: ctx.subredditName!,
@@ -166,6 +166,17 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
       await ctx.redis.del(`${ctx.postId}|images`);
       setChartConfig(config);
       setChartImgUrl(await getChartImageUrl(ctx.postId!, { width, height }));
+    },
+  );
+
+  const { loading } = useAsync(
+    async () => await getChartImageUrl(ctx.postId!, { width, height }),
+    {
+      depends: [width, height],
+      finally: (chartImgUrl, e) => {
+        if (e) console.error(e);
+        else setChartImgUrl(chartImgUrl!);
+      },
     },
   );
 
