@@ -237,7 +237,7 @@ Devvit.addTrigger({
     console.log("AppInstall");
     await ctx.scheduler.runJob({
       name: "chart-js",
-      cron: "1 * * * *",
+      cron: "15 * * * *",
     });
   },
 });
@@ -251,10 +251,10 @@ Devvit.addTrigger({
       if (!jobs.some((i) => i.name === "chart-js"))
         await ctx.scheduler.runJob({
           name: "chart-js",
-          cron: "1 * * * *",
+          cron: "15 * * * *",
         });
     } catch (e) {
-      console.error("Failed to check scheduler:", e);
+      console.error(e);
     }
   },
 });
