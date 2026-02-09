@@ -10,7 +10,7 @@ Devvit.configure({
 
 const _api = "https://quickchart.io/chart";
 const _chart =
-  '{ data: { datasets: [ { backgroundColor: pattern.draw("plus", "#FFCCBC"), borderColor: "#BF360C", borderWidth: 1, data: [256, 512], fill: true, label: "Value", pointStyle: "circle", tension: 0.25 } ], labels: ["Q1", "Q10"] }, options: { layout: { padding: { bottom: 24, left: 16, right: 32, top: 48 } }, plugins: { legend: { labels: { usePointStyle: true } } }, scales: { y: { beginAtZero: false } } }, type: "line" }';
+  '{ data: { datasets: [ { backgroundColor: pattern.draw("plus", "#FFCCBC"), borderColor: "#BF360C", borderWidth: 1, data: [256, 512], fill: true, label: "Value", pointStyle: "circle", tension: 0.25 } ], labels: ["Q1", "Q10"] }, options: { layout: { padding: { bottom: 24, left: 8, right: 16, top: 48 } }, plugins: { legend: { labels: { usePointStyle: true } } }, scales: { y: { beginAtZero: false } } }, type: "line" }';
 
 function format(s: string) {
   return beautify(s, {
@@ -81,7 +81,7 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
     try {
       const { mediaUrl } = await ctx.media.upload({
         type: "image",
-        url: `${_api}?w=${options.width}&v=4&h=${options.height}&c=${encodeURIComponent(chart)}`, // version=4
+        url: `${_api}?w=${options.width}&v=4&h=${options.height}&f=webp&c=${encodeURIComponent(chart)}`, // theme=white, version=4
       });
       url = mediaUrl;
     } catch (e: any) {
@@ -171,14 +171,14 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
 
   return (
     <zstack backgroundColor="white" height="100%" width="100%">
-      <vstack alignment="middle center" grow height="100%" width="100%">
-        <image
-          imageHeight={height}
-          imageWidth={width}
-          resizeMode="fit"
-          url={chartImgUrl}
-        />
-      </vstack>
+      <image
+        height="100%"
+        imageHeight={height}
+        imageWidth={width}
+        resizeMode="fill"
+        url={chartImgUrl}
+        width="100%"
+      />
       <vstack width="100%">
         <hstack
           alignment="middle center"

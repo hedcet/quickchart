@@ -12,14 +12,6 @@ Build interactive Chart.js visualizations on Reddit using [quickchart.io](https:
 2. Click **customize** on your post
 3. Paste your Chart.js config as JSON, or link to a wiki page with `wiki:page-name`
 
-### Features
-
-**Auto-sync with wiki pages** — Link your chart to a wiki page and it'll update automatically when you edit the config. Re-save via customize to refresh manually.
-
-**Responsive rendering** — Charts adapt to any screen size without losing quality.
-
-**Smart caching** — Images are cached efficiently and auto-refresh when configs change.
-
 ### Tips
 
 - Only moderators can see the customize button
