@@ -81,7 +81,7 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
     try {
       const { mediaUrl } = await ctx.media.upload({
         type: "image",
-        url: `${_api}?w=${options.width}&v=4&h=${options.height}&f=webp&c=${encodeURIComponent(chart)}`, // theme=white, version=4
+        url: `${_api}?width=${options.width}&version=4&height=${options.height}&format=png&chart=${encodeURIComponent(chart)}&backgroundColor=white`, // theme=white, version=4
       });
       url = mediaUrl;
     } catch (e: any) {
@@ -170,7 +170,7 @@ const App: Devvit.CustomPostComponent = (ctx: Devvit.Context) => {
   );
 
   return (
-    <zstack backgroundColor="white" height="100%" width="100%">
+    <zstack height="100%" width="100%">
       <image
         height="100%"
         imageHeight={height}
